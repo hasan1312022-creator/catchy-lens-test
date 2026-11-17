@@ -43,7 +43,7 @@ CL.data={
    if(CL.config.mode!=='live')return d.settings;
    return self.live().then(function(l){
     var s=Object.assign({},d.settings),x=l.settings||{};
-    if(x.whatsapp)s.whatsapp=x.whatsapp;
+    if(x.whatsapp)s.whatsapp=x.whatsapp;if(x.announcement)s.announcement=x.announcement;
     s.freeShipMin=x.free_ship_min||0;s.prepTime=x.prep_time||'';s.zones=l.zones||[];
     return s;
    });
