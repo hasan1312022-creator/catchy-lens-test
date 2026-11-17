@@ -16,13 +16,13 @@ function stateNote(){
 function buy(){
  var lens=P.category==='lenses',out=P.state==='out',disc=P.oldPrice&&P.price&&P.oldPrice>P.price?Math.round((1-P.price/P.oldPrice)*100):0;
  var h='<div class="buy"><a class="brand" href="'+U.catalog+'?brand='+encodeURIComponent(P.brand)+'">'+e(P.brand)+'</a><h1>'+e(P.name)+'</h1>'
-  +'<div class="pricebox"><span class="price">'+CL.money(P.price)+'</span>'+(P.oldPrice?'<del class="old">'+CL.money(P.oldPrice)+'</del>':'')+(disc?'<span class="tag discount">-'+disc+'%</span>':'')+'</div>'
+  +'<div class="pricebox"><span class="price">'+CL.money(P.price)+'</span>'+(P.oldPrice?'<del class="old">'+CL.money(P.oldPrice)+'</del>':'')+(disc?'<span class="tag discount">-'+disc+'%</span>':'')+'</div>'+(lens&&P.powerType==='both'&&P.powerPrice!=null&&P.powerPrice!==P.price?'<p class="note">سعر العدسة بقوة نظر: <b>'+CL.money(P.powerPrice)+'</b> (لو عين بدون قوة وعين بقوة السعر متوسط السعرين).</p>':'')
   +'<div class="chips-row"><span class="stock '+(P.state==='in'?'':e(P.state))+'">'+(CL.state[P.state]||'')+'</span>'+(lens&&P.powerType?'<span class="ptype inline" dir="ltr">'+(P.powerType==='both'?'Plano &amp; Power':'Plano')+'</span>':'')+'</div>'+stateNote();
  if(lens&&P.powerType==='both'){
   h+='<div class="powerbox"><a class="textlink" href="#" data-help>إزاي أعرف قوة نظري؟</a><p class="note">تأكدي من الروشتة قبل اختيار القوة.</p><div class="two"><label>العين اليمنى<select id="pr">'+powerOpts()+'</select></label><label>العين اليسرى<select id="pl">'+powerOpts()+'</select></label></div><label class="same"><input type="checkbox" id="same"> <span>نفس القوة للعين التانية</span></label></div>';
  }else if(lens){h+='<p class="note">العدسة دي Plano فقط (بدون قوة نظر).</p>'}
  h+='<div class="qty"><span>الكمية</span><div dir="ltr"><button type="button" data-q="-1" aria-label="أقل">−</button><output id="qty">1</output><button type="button" data-q="1" aria-label="أكتر">+</button></div></div>'
-  +'<p class="err" id="perr" role="alert" hidden></p>'
+  +(lens&&P.powerType==='both'?'<p class="note" id="pcur"></p>':'')+'<p class="err" id="perr" role="alert" hidden></p>'
   +'<button type="button" class="btn buybtn" id="addmain" data-pdp-add'+(out?' disabled':'')+'>'+(out?'نفد المخزون':'أضيفي للسلة')+'</button></div>';
  return h;
 }
@@ -52,6 +52,7 @@ function jsonld(){
 function page(){
  return '<div class="wrap has-bar">'+CL.ui.trust()+'<nav class="crumbs" aria-label="مسار الصفحة"><a href="'+U.home+'">الرئيسية</a> › <a href="'+U.catalog+'?category='+e(P.category)+'">'+e(CATN[P.category]||'المنتجات')+'</a> › <span aria-current="page">'+e(P.name)+'</span></nav><div class="pdp">'+gallery()+buy()+'</div>'+details()+related()+'</div><div class="stickybar" id="sticky" aria-hidden="true"><div><span class="price">'+CL.money(P.price)+'</span></div><button type="button" class="btn" data-pdp-add'+(P.state==='out'?' disabled':'')+' tabindex="-1">'+(P.state==='out'?'نفد المخزون':'أضيفي للسلة')+'</button></div>';
 }
+function curPrice(){var el=document.getElementById('pcur');if(!el)return;var r=value('pr'),l=document.getElementById('same').checked?r:value('pl'),u=CL.unitPrice(P,{plano:false,r:r,l:l});el.textContent='سعر الزوج حسب اختيارك: '+CL.money(u)}
 function value(id){var x=document.getElementById(id);return x?x.value:'0.00'}
 function add(){
  var q=+document.getElementById('qty').textContent,er=document.getElementById('perr'),it={id:P.id,slug:P.slug,q:q};
@@ -77,7 +78,8 @@ function bind(){
   var q=t.closest('.buy [data-q]');if(q){var o=document.getElementById('qty');o.textContent=Math.max(1,Math.min(10,(+o.textContent)+(+q.dataset.q)));return}
   if(t.closest('[data-pdp-add]')&&!t.closest('[disabled]'))add();
  });
- document.addEventListener('change',function(ev){if(ev.target.id==='same'){var L=document.getElementById('pl');L.disabled=ev.target.checked;if(ev.target.checked)L.value=value('pr')}if(ev.target.id==='pr'&&document.getElementById('same').checked)document.getElementById('pl').value=value('pr')});
+ document.addEventListener('change',function(ev){if(ev.target.id==='same'){var L=document.getElementById('pl');L.disabled=ev.target.checked;if(ev.target.checked)L.value=value('pr')}if(ev.target.id==='pr'&&document.getElementById('same').checked)document.getElementById('pl').value=value('pr');if(ev.target.id==='pr'||ev.target.id==='pl'||ev.target.id==='same')curPrice()});
+ curPrice();
  var main=document.getElementById('addmain'),bar=document.getElementById('sticky');
  if(main&&'IntersectionObserver' in window){new IntersectionObserver(function(en){var v=!en[0].isIntersecting;bar.classList.toggle('show',v);bar.setAttribute('aria-hidden',!v);bar.querySelector('button').tabIndex=v?0:-1}).observe(main)}
 }

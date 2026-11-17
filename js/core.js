@@ -18,5 +18,43 @@ CL.cart={
  add:function(it){var l=this.items(),k=[it.id,it.plano?1:0,it.r||'',it.l||''].join('|'),f=l.filter(function(x){return [x.id,x.plano?1:0,x.r||'',x.l||''].join('|')===k})[0];if(f)f.q=Math.min(10,(f.q||0)+(it.q||1));else{it.q=it.q||1;l.push(it)}CL.store.set('cl-cart',l);this.refresh()},
  refresh:function(){var n=this.count();document.querySelectorAll('[data-cartlink]').forEach(function(a){var b=a.querySelector('.count');if(n){if(!b){b=document.createElement('span');b.className='count';a.appendChild(b)}b.textContent=n}else if(b)b.remove()})}
 };
+
+/* ---- pricing per eye + offers (mirrors the server rules in place_order) ---- */
+CL.eyePw=function(v){v=String(v==null?'':v).trim();var n=parseFloat(v);return v!==''&&v!=='plano'&&!isNaN(n)&&n!==0};
+CL.unitPrice=function(p,it){
+ if(!p||p.price==null)return 0;
+ if(!it||it.plano||p.powerType!=='both')return p.price;
+ var pp=p.powerPrice!=null?p.powerPrice:p.price;
+ return Math.ceil(((CL.eyePw(it.r)?pp:p.price)+(CL.eyePw(it.l)?pp:p.price))/2);
+};
+CL.rewardText=function(o,P){
+ var m={shipping:'شحن مجاني',percent:'خصم '+o.value+'%',amount:'خصم '+CL.num(o.value)+' ج.م',fixed_price:'السعر '+CL.num(o.value)+' ج.م',gift_lens:'عدسة هدية'};
+ if(o.reward==='gift'){var g=(P||[]).filter(function(x){return x.id===o.giftVariantId})[0];return (g?(g.fullName||g.name)+' '+g.name:'هدية')+' هدية'}
+ return m[o.reward]||'';
+};
+/* L = [{p:card,it:cartItem,ok:bool}] ; returns {offer,disc,free,gift,pickGift,hint} */
+CL.evalOffers=function(L,offers,P){
+ var res={offer:null,disc:0,free:false,gift:null,pickGift:false,hint:null};
+ L=L.filter(function(x){return x.ok&&x.p});
+ function elig(o,x){return !o.productIds||!o.productIds.length||o.productIds.indexOf(x.p.pid)>-1}
+ var near=null;
+ for(var i=0;i<(offers||[]).length;i++){
+  var o=offers[i],cnt=0,esub=0,units=[];
+  L.forEach(function(x){
+   if(!elig(o,x))return;var u=CL.unitPrice(x.p,x.it);esub+=u*x.it.q;
+   if(x.p.category==='lenses'){cnt+=x.it.q;for(var k=0;k<x.it.q;k++)units.push(u)}
+  });
+  if(cnt<o.minQty||esub<=0||esub<o.minTotal){if(cnt>0&&cnt<o.minQty&&esub>0&&!near)near={o:o,need:o.minQty-cnt};continue}
+  var d=0;
+  if(o.reward==='shipping'){res.offer=o;res.free=true;return res}
+  if(o.reward==='percent'){d=Math.floor(esub*Math.min(o.value,100)/100)}
+  else if(o.reward==='amount'){d=Math.min(o.value,esub)}
+  else if(o.reward==='fixed_price'){units.sort(function(a,b){return a-b});var b=units.slice(0,o.minQty).reduce(function(n,u){return n+u},0);d=Math.max(0,b-o.value)}
+  else if(o.reward==='gift'){res.offer=o;res.gift=(P||[]).filter(function(x){return x.id===o.giftVariantId})[0]||{name:'هدية'};return res}
+  else if(o.reward==='gift_lens'){res.offer=o;res.pickGift=true;return res}
+  if(d>0){res.offer=o;res.disc=d;return res}
+ }
+ res.hint=near;return res;
+};
 CL.toast=function(m){var t=document.getElementById('toast');if(!t)return;t.textContent=m;t.className='show';clearTimeout(CL._t);CL._t=setTimeout(function(){t.className=''},2400)};
 })();

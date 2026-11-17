@@ -44,16 +44,17 @@ function loadAll(){
  return Promise.all([
   api('/rest/v1/store_products?select=*,store_variants(id,stock_id,color_label,swatch,active,sort,images,stock(qty))&order=sort.asc,id.asc'),
   api('/rest/v1/store_settings?select=key,value'),
-  api('/rest/v1/store_coupons?select=*&order=code.asc')
- ]).then(function(r){S.products=r[0]||[];S.settings={};(r[1]||[]).forEach(function(x){S.settings[x.key]=x.value});S.coupons=r[2]||[]});
+  api('/rest/v1/store_coupons?select=*&order=code.asc'),
+  api('/rest/v1/store_offers?select=*&order=sort.asc,id.asc').catch(function(){return []})
+ ]).then(function(r){S.offers=r[3]||[];S.products=r[0]||[];S.settings={};(r[1]||[]).forEach(function(x){S.settings[x.key]=x.value});S.coupons=r[2]||[]});
 }
 /* ---------- shell ---------- */
 function render(){
  root.innerHTML='<div class="bar"><b>Catchy Lens — لوحة التحكم</b><span class="sp"></span><button id="out">خروج</button></div><div class="tabs" role="tablist">'
-  +[['products','المنتجات'],['settings','الإعدادات'],['pages','الصفحات'],['coupons','الكوبونات']].map(function(t){return '<button role="tab" data-tab="'+t[0]+'" aria-selected="'+(S.tab===t[0])+'">'+t[1]+'</button>'}).join('')+'</div><main id="m"></main>';
+  +[['products','المنتجات'],['settings','الإعدادات'],['pages','الصفحات'],['offers','العروض'],['coupons','الكوبونات']].map(function(t){return '<button role="tab" data-tab="'+t[0]+'" aria-selected="'+(S.tab===t[0])+'">'+t[1]+'</button>'}).join('')+'</div><main id="m"></main>';
  document.getElementById('out').onclick=function(){S.tok=null;S.ref=null;save();loginView()};
  [].forEach.call(root.querySelectorAll('[data-tab]'),function(b){b.onclick=function(){S.tab=b.dataset.tab;render()}});
- ({products:productsView,settings:settingsView,pages:function(){pagesView()},coupons:couponsView})[S.tab]();
+ ({products:productsView,settings:settingsView,pages:function(){pagesView()},offers:offersView,coupons:couponsView})[S.tab]();
 }
 /* ---------- products ---------- */
 function stockOf(p){return (p.store_variants||[]).reduce(function(n,v){return n+((v.stock&&v.stock.qty)||0)},0)}
@@ -99,7 +100,7 @@ function editor(id){
    +'<label>الاسم الظاهر<input id="e-name" value="'+esc(p.name)+'" maxlength="160"></label><label>الماركة<input id="e-brand" value="'+esc(p.brand)+'"></label>'
    +'<label>القسم<select id="e-cat">'+opts(CAT,p.category)+'</select></label><label>المدة<select id="e-dur">'+opts(DUR,p.duration)+'</select></label>'
    +'<label>نوع القوة<select id="e-pt">'+opts([['plano','بدون قوة فقط (Plano)'],['both','Plano وبقوة نظر']],p.power_type)+'</select></label>'
-   +'<label>السعر<input id="e-price" type="number" min="0" value="'+(p.price||'')+'"></label><label>السعر قبل الخصم<input id="e-old" type="number" min="0" value="'+(p.old_price||'')+'"></label>'
+   +'<label>السعر<input id="e-price" type="number" min="0" value="'+(p.price||'')+'"></label><label>السعر قبل الخصم<input id="e-old" type="number" min="0" value="'+(p.old_price||'')+'"></label><label>سعر العدسة بقوة نظر (اتركيه فاضي لو نفس السعر)<input id="e-pp" type="number" min="0" value="'+(p.power_price==null?'':p.power_price)+'"></label>'
    +'<label>الترتيب (الأصغر الأول)<input id="e-sort" type="number" value="'+(p.sort||0)+'"></label></div>'
    +'<label style="margin-top:12px">الوصف<textarea id="e-desc" rows="4" maxlength="4000">'+esc(p.description)+'</textarea></label>'
    +'<label style="margin-top:12px">وسوم (مفصولة بفاصلة) — للاختبار واقتراح العدسة<input id="e-tags" value="'+esc((p.tags||[]).join(', '))+'"></label>'
@@ -117,7 +118,7 @@ function editor(id){
  function rmFile(u){if(u&&u.indexOf('/public/'+BUCKET+'/')>0)api('/storage/v1/object/'+BUCKET+'/'+decodeURIComponent(u.split('/public/'+BUCKET+'/')[1]),{method:'DELETE'}).catch(function(){})}
  function readIn(){readVars();
   var g=function(i){var e=ov.querySelector(i);return e?e.value:null};
-  if(g('#e-name')!=null){p.name=g('#e-name').trim();p.brand=g('#e-brand').trim();p.category=g('#e-cat');p.duration=g('#e-dur');p.power_type=g('#e-pt');p.price=+g('#e-price')||0;p.old_price=g('#e-old')===''?null:+g('#e-old');p.sort=+g('#e-sort')||0;p.description=g('#e-desc');p.tags=g('#e-tags').split(',').map(function(x){return x.trim()}).filter(Boolean)}
+  if(g('#e-name')!=null){p.name=g('#e-name').trim();p.brand=g('#e-brand').trim();p.category=g('#e-cat');p.duration=g('#e-dur');p.power_type=g('#e-pt');p.price=+g('#e-price')||0;p.old_price=g('#e-old')===''?null:+g('#e-old');p.power_price=g('#e-pp')===''?null:+g('#e-pp');p.sort=+g('#e-sort')||0;p.description=g('#e-desc');p.tags=g('#e-tags').split(',').map(function(x){return x.trim()}).filter(Boolean)}
  }
  function resize(file){
   return createImageBitmap(file).then(function(bm){var r=Math.min(1,1200/Math.max(bm.width,bm.height)),c=document.createElement('canvas');c.width=Math.round(bm.width*r);c.height=Math.round(bm.height*r);c.getContext('2d').drawImage(bm,0,0,c.width,c.height);return new Promise(function(ok){c.toBlob(ok,'image/webp',0.82)})});
@@ -138,7 +139,7 @@ function vupload(id,ev){
   if(p.old_price!=null&&p.old_price<=p.price)p.old_price=null;
   var b=ov.querySelector('#e-save');b.disabled=true;
   var vrows=[].slice.call(ov.querySelectorAll('[data-v]'));
-  api('/rest/v1/store_products?id=eq.'+p.id,{method:'PATCH',headers:{Prefer:'return=minimal'},body:{name:p.name,brand:p.brand,category:p.category,duration:p.duration,power_type:p.power_type,price:p.price,old_price:p.old_price,sort:p.sort,description:p.description,tags:p.tags,images:imgs}})
+  api('/rest/v1/store_products?id=eq.'+p.id,{method:'PATCH',headers:{Prefer:'return=minimal'},body:{name:p.name,brand:p.brand,category:p.category,duration:p.duration,power_type:p.power_type,price:p.price,power_price:p.power_price,old_price:p.old_price,sort:p.sort,description:p.description,tags:p.tags,images:imgs}})
    .then(function(){p.images=imgs;return Promise.all(vrows.map(function(tr){
      var v=vs.filter(function(x){return x.id===+tr.dataset.v})[0],cl=(v.color_label||'').trim()||v.color_label;
      var sig=JSON.stringify([v.color_label,v.swatch,v.active,v.images]);if(sig===orig[v.id])return null;
@@ -191,6 +192,69 @@ function couponsView(){
   var t=e.target.closest('[data-tg]'),d=e.target.closest('[data-dl]');
   if(t){var c=S.coupons.filter(function(x){return x.code===t.dataset.tg})[0];api('/rest/v1/store_coupons?code=eq.'+encodeURIComponent(c.code),{method:'PATCH',headers:{Prefer:'return=minimal'},body:{active:!c.active}}).then(function(){c.active=!c.active;couponsView()}).catch(function(e){msg(e.message,true)})}
   if(d&&confirm('تحذفي الكوبون '+d.dataset.dl+'؟'))api('/rest/v1/store_coupons?code=eq.'+encodeURIComponent(d.dataset.dl),{method:'DELETE',headers:{Prefer:'return=minimal'}}).then(function(){S.coupons=S.coupons.filter(function(x){return x.code!==d.dataset.dl});couponsView()}).catch(function(e){msg(e.message,true)});
+ };
+}
+
+/* ---------- offers ---------- */
+var RW=[['shipping','شحن مجاني'],['gift','هدية من المخزون (محلول / ماجيك بوكس / إكسسوار / عدسة محددة)'],['gift_lens','عدسة هدية (العميلة تختار اللون من ماركات تحددينها)'],['percent','خصم بنسبة %'],['amount','خصم بمبلغ ثابت (ج.م)'],['fixed_price','سعر ثابت لعدد العدسات (ج.م)']];
+function pname(id){var p=S.products.filter(function(x){return x.id===id})[0];return p?p.name:'#'+id}
+function rwText(o){
+ var v={shipping:'شحن مجاني',percent:'خصم '+o.value+'%',amount:'خصم '+o.value+' ج.م',fixed_price:'السعر '+o.value+' ج.م'}[o.reward];
+ if(o.reward==='gift'){var g=null;S.products.forEach(function(p){(p.store_variants||[]).forEach(function(x){if(x.id===o.gift_variant_id)g=p.name+' '+x.color_label})});v='هدية: '+(g||'؟')}
+ if(o.reward==='gift_lens')v='عدسة هدية من: '+(o.gift_product_ids||[]).map(pname).join('، ');
+ return v;
+}
+function cond(o){var l=[];if(o.min_qty>0)l.push('عدد العدسات '+o.min_qty);if(o.min_total>0)l.push('إجمالي '+o.min_total+' ج.م');l.push((o.product_ids||[]).length?'على: '+o.product_ids.map(pname).join('، '):'على كل المنتجات');return l.join(' — ')}
+function offersView(){
+ var m=document.getElementById('m');
+ m.innerHTML='<h2>العروض</h2><p class="hint" style="font-size:14px;color:#6a5662">عرض واحد بس بيتطبق على الطلب: الأقل في "الأولوية" (1 أول) هو اللي بيتجرّب الأول. الكوبون بيتجمّع مع العرض. العرض اللي هديته خلصت من المخزون بيقف لوحده.</p><button class="btn" id="newo">+ عرض جديد</button>'
+  +'<div class="tw"><table><thead><tr><th>الأولوية</th><th>العرض</th><th>الشرط</th><th>المكافأة</th><th>المدة</th><th>الحالة</th><th></th></tr></thead><tbody>'+(S.offers.map(function(o){
+   return '<tr data-o="'+o.id+'"><td>'+o.sort+'</td><td><b>'+esc(o.name)+'</b></td><td>'+esc(cond(o))+'</td><td>'+esc(rwText(o))+'</td><td>'+(o.starts_at?o.starts_at.slice(0,10):'—')+' → '+(o.ends_at?o.ends_at.slice(0,10):'—')+'</td><td><label><input type="checkbox" data-otg="'+o.id+'"'+(o.active?' checked':'')+'> شغّال</label></td><td><button class="btn alt sm" data-oed="'+o.id+'">تعديل</button> <button class="btn alt sm" data-odl="'+o.id+'">حذف</button></td></tr>'}).join('')||'<tr><td colspan="7" style="text-align:center;padding:24px">لسه مفيش عروض. اضغطي "عرض جديد".</td></tr>')+'</tbody></table></div>';
+ document.getElementById('newo').onclick=function(){offerEditor(null)};
+ m.onclick=function(e){
+  var t=e.target.closest('[data-otg]'),ed=e.target.closest('[data-oed]'),d=e.target.closest('[data-odl]');
+  if(t){var o=S.offers.filter(function(x){return x.id===+t.dataset.otg})[0];api('/rest/v1/store_offers?id=eq.'+o.id,{method:'PATCH',headers:{Prefer:'return=minimal'},body:{active:t.checked}}).then(function(){o.active=t.checked;msg(o.active?'العرض اشتغل':'العرض اتوقف')}).catch(function(er){t.checked=!t.checked;msg('ما اتحفظش: '+er.message,true)})}
+  if(ed)offerEditor(+ed.dataset.oed);
+  if(d&&confirm('تحذفي العرض ده؟'))api('/rest/v1/store_offers?id=eq.'+d.dataset.odl,{method:'DELETE',headers:{Prefer:'return=minimal'}}).then(function(){S.offers=S.offers.filter(function(x){return x.id!==+d.dataset.odl});msg('اتحذف');offersView()}).catch(function(er){msg('ما اتحذفش: '+er.message,true)});
+ };
+}
+function offerEditor(id){
+ var o=id?S.offers.filter(function(x){return x.id===id})[0]:{name:'',description:'',active:false,sort:10,product_ids:[],min_qty:1,min_total:0,reward:'shipping',value:0,gift_variant_id:null,gift_product_ids:[],starts_at:null,ends_at:null};
+ var ov=document.createElement('div');ov.className='ov';
+ var lens=S.products.filter(function(p){return p.category==='lenses'}),allv=[];
+ S.products.forEach(function(p){(p.store_variants||[]).forEach(function(v){allv.push([v.id,p.name+' — '+v.color_label+' ('+({lenses:'عدسات',care:'محاليل',accessories:'إكسسوارات'}[p.category]||'')+')'])})});
+ function chk(name,list,sel){return '<div class="chk" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:6px;max-height:180px;overflow:auto;border:1px solid #e3d4df;border-radius:10px;padding:8px">'+list.map(function(p){return '<label style="display:flex;gap:6px;align-items:center"><input type="checkbox" name="'+name+'" value="'+p.id+'"'+((sel||[]).indexOf(p.id)>-1?' checked':'')+'> '+esc(p.name)+'</label>'}).join('')+'</div>'}
+ ov.innerHTML='<div class="modal" role="dialog" aria-modal="true"><h2>'+(id?'تعديل عرض':'عرض جديد')+'</h2><form id="of" class="grid">'
+  +'<label>اسم العرض (بيظهر للعميلة)<input name="name" maxlength="120" required value="'+esc(o.name)+'"></label>'
+  +'<label>وصف قصير (اختياري)<input name="description" maxlength="500" value="'+esc(o.description)+'"></label>'
+  +'<label>الأولوية (1 أول)<input name="sort" type="number" value="'+o.sort+'"></label>'
+  +'<label>من تاريخ (اختياري)<input name="starts_at" type="date" value="'+(o.starts_at?o.starts_at.slice(0,10):'')+'"></label><label>لحد تاريخ (اختياري)<input name="ends_at" type="date" value="'+(o.ends_at?o.ends_at.slice(0,10):'')+'"></label>'
+  +'<h3 style="grid-column:1/-1">الشرط</h3><label>عدد العدسات (0 لو الشرط مبلغ بس)<input name="min_qty" type="number" min="0" value="'+o.min_qty+'"></label><label>أقل إجمالي بالجنيه (0 = بدون)<input name="min_total" type="number" min="0" value="'+o.min_total+'"></label>'
+  +'<div style="grid-column:1/-1"><b>المنتجات اللي جوا العرض</b> <small>(لو ما اخترتيش حاجة = كل المنتجات)</small>'+chk('pids',S.products,o.product_ids)+'</div>'
+  +'<h3 style="grid-column:1/-1">المكافأة</h3><label style="grid-column:1/-1">النوع<select name="reward">'+RW.map(function(x){return '<option value="'+x[0]+'"'+(x[0]===o.reward?' selected':'')+'>'+esc(x[1])+'</option>'}).join('')+'</select></label>'
+  +'<label data-w="percent amount fixed_price">القيمة<input name="value" type="number" min="0" step="1" value="'+(o.value||'')+'"></label>'
+  +'<label data-w="gift" style="grid-column:1/-1">المنتج الهدية (من المخزون)<select name="gift_variant_id"><option value="">اختاري</option>'+allv.map(function(x){return '<option value="'+x[0]+'"'+(x[0]===o.gift_variant_id?' selected':'')+'>'+esc(x[1])+'</option>'}).join('')+'</select></label>'
+  +'<div data-w="gift_lens" style="grid-column:1/-1"><b>الماركات المسموحة كعدسة هدية</b>'+chk('gpids',lens,o.gift_product_ids)+'</div>'
+  +'<label style="display:flex;gap:8px;align-items:center;grid-column:1/-1"><input type="checkbox" name="active"'+(o.active?' checked':'')+'> شغّال</label>'
+  +'<div style="grid-column:1/-1;display:flex;gap:10px"><button class="btn" type="submit">حفظ</button><button class="btn alt" type="button" id="oc">إلغاء</button></div></form></div>';
+ document.body.appendChild(ov);
+ var f=ov.querySelector('#of');
+ function sync(){var r=f.reward.value;[].forEach.call(ov.querySelectorAll('[data-w]'),function(el){el.hidden=el.dataset.w.split(' ').indexOf(r)<0})}
+ f.reward.onchange=sync;sync();
+ ov.querySelector('#oc').onclick=function(){ov.remove()};
+ f.onsubmit=function(ev){
+  ev.preventDefault();var ids=function(n){return [].slice.call(f.querySelectorAll('[name='+n+']:checked')).map(function(x){return +x.value})};
+  var b={name:f.name.value.trim(),description:f.description.value.trim(),sort:+f.sort.value||0,active:f.active.checked,starts_at:f.starts_at.value?f.starts_at.value+'T00:00:00+02:00':null,ends_at:f.ends_at.value?f.ends_at.value+'T23:59:59+02:00':null,
+   min_qty:+f.min_qty.value||0,min_total:+f.min_total.value||0,product_ids:ids('pids'),reward:f.reward.value,value:+f.value.value||0,gift_variant_id:f.gift_variant_id.value?+f.gift_variant_id.value:null,gift_product_ids:ids('gpids')};
+  if(b.reward==='gift'&&!b.gift_variant_id)return msg('اختاري المنتج الهدية.',true);
+  if(b.reward==='gift_lens'&&!b.gift_product_ids.length)return msg('اختاري ماركة واحدة على الأقل للعدسة الهدية.',true);
+  if(['percent','amount','fixed_price'].indexOf(b.reward)>-1&&!(b.value>0))return msg('اكتبي قيمة الخصم أو السعر.',true);
+  if(b.reward==='percent'&&b.value>100)return msg('النسبة لازم تكون 100 أو أقل.',true);
+  if(b.min_qty===0&&b.min_total===0&&b.reward!=='shipping'&&!b.product_ids.length&&!confirm('العرض ده من غير شرط وعلى كل المنتجات. متأكدة؟'))return;
+  if(b.reward!=='gift')b.gift_variant_id=null;if(b.reward!=='gift_lens')b.gift_product_ids=[];if(['percent','amount','fixed_price'].indexOf(b.reward)<0)b.value=0;
+  var btn=f.querySelector('[type=submit]');btn.disabled=true;
+  var rq=id?api('/rest/v1/store_offers?id=eq.'+id,{method:'PATCH',headers:{Prefer:'return=representation'},body:b}):api('/rest/v1/store_offers',{method:'POST',headers:{Prefer:'return=representation'},body:b});
+  rq.then(function(r){if(id)S.offers=S.offers.map(function(x){return x.id===id?r[0]:x});else S.offers.push(r[0]);S.offers.sort(function(a,b){return a.sort-b.sort||a.id-b.id});ov.remove();msg('اتحفظ العرض');offersView()}).catch(function(er){msg('ما اتحفظش: '+er.message,true)}).then(function(){btn.disabled=false});
  };
 }
 /* ---------- boot ---------- */
