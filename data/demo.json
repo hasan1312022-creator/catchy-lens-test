@@ -1,0 +1,499 @@
+{
+ "_demo": true,
+ "settings": {
+  "announcement": "Your Eyes. Your Magic.",
+  "whatsapp": "",
+  "leadDays": null,
+  "powers": [
+   "-0.50",
+   "-0.75",
+   "-1.00",
+   "-1.25",
+   "-1.50",
+   "-1.75",
+   "-2.00",
+   "-2.25",
+   "-2.50",
+   "-2.75",
+   "-3.00",
+   "-3.25",
+   "-3.50",
+   "-3.75",
+   "-4.00",
+   "-4.25",
+   "-4.50",
+   "-4.75",
+   "-5.00",
+   "-5.25",
+   "-5.50",
+   "-5.75",
+   "-6.00"
+  ],
+  "brands": [
+   {
+    "name": "Siri Eyes",
+    "image": "img/lens-box.webp",
+    "demo": true
+   },
+   {
+    "name": "Solitaire",
+    "image": "img/lens-box.webp",
+    "demo": true
+   },
+   {
+    "name": "Bella",
+    "image": "img/lens-box.webp",
+    "demo": true
+   },
+   {
+    "name": "Lens Me",
+    "image": "img/lens-box.webp",
+    "demo": true
+   },
+   {
+    "name": "Fresh Lady",
+    "image": "img/lens-box.webp",
+    "demo": true
+   },
+   {
+    "name": "Urban",
+    "image": "img/lens-box.webp",
+    "demo": true
+   },
+   {
+    "name": "Nadine",
+    "image": "img/lens-box.webp",
+    "demo": true
+   },
+   {
+    "name": "Catchy Lens",
+    "image": "img/lens-box.webp",
+    "demo": true
+   }
+  ],
+  "colorLabels": {
+   "honey": "عسلي",
+   "green": "أخضر",
+   "blue": "أزرق",
+   "gray": "رمادي",
+   "brown": "بني",
+   "hazel": "هازل",
+   "lilac": "بنفسجي",
+   "cocoa": "كاكاو"
+  }
+ },
+ "content": {
+  "colors": [
+   {
+    "id": "honey",
+    "label": "عسلي",
+    "image": "img/eye-honey.webp"
+   },
+   {
+    "id": "green",
+    "label": "أخضر",
+    "image": "img/eye-green.webp"
+   },
+   {
+    "id": "gray",
+    "label": "رمادي",
+    "image": "img/eye-gray.webp"
+   },
+   {
+    "id": "blue",
+    "label": "أزرق",
+    "image": "img/eye-blue.webp"
+   }
+  ],
+  "film": {
+   "cover": "img/brand-video-cover.webp",
+   "url": null
+  },
+  "quiz": {
+   "image": "img/lens-quiz.webp",
+   "title": "لسه محتارة في لونك؟",
+   "cta": "ابدئي الاختبار",
+   "href": "quiz"
+  },
+  "offers": {
+   "desktop": "img/offers-desktop.webp",
+   "mobile": "img/offers-mobile.webp",
+   "title": "تفاصيل صغيرة، جمال أكتر",
+   "cta": "اكتشفي المجموعة",
+   "href": "offers"
+  },
+  "arrivals": {
+   "desktop": "img/new-arrivals-desktop.webp",
+   "mobile": "img/new-arrivals-mobile.webp",
+   "title": "اختيار جديد لإطلالتك",
+   "cta": "شوفي الجديد",
+   "href": "catalog"
+  },
+  "moments": [
+   {
+    "image": "img/catchy-moments-01.webp",
+    "url": null
+   },
+   {
+    "image": "img/catchy-moments-02.webp",
+    "url": null
+   },
+   {
+    "image": "img/catchy-moments-03.webp",
+    "url": null
+   }
+  ],
+  "reviews": [],
+  "heroSlides": [
+   {
+    "desktop": "img/hero-desktop.webp",
+    "mobile": "img/hero-mobile.webp",
+    "alt": "إطلالة Catchy Lens",
+    "title": "Your Eyes.<br>Your Magic.",
+    "sub": "لونك... بطريقتك",
+    "cta": "اكتشفي الألوان",
+    "href": "catalog"
+   },
+   {
+    "desktop": "img/offers-desktop.webp",
+    "mobile": "img/offers-mobile.webp",
+    "alt": "تفاصيل صغيرة",
+    "title": "تفاصيل صغيرة،<br>جمال أكتر",
+    "sub": "مجموعة جديدة من الإكسسوارات",
+    "cta": "اكتشفي المجموعة",
+    "href": "offers"
+   },
+   {
+    "desktop": "img/new-arrivals-desktop.webp",
+    "mobile": "img/new-arrivals-mobile.webp",
+    "alt": "وصل حديثًا",
+    "title": "اختيار جديد<br>لإطلالتك",
+    "sub": "ألوان جديدة وصلت",
+    "cta": "شوفي الجديد",
+    "href": "catalog"
+   }
+  ]
+ },
+ "products": [
+  {
+   "id": 1,
+   "slug": "demo-1",
+   "brand": "Siri Eyes",
+   "name": "رمادي ناعم",
+   "category": "lenses",
+   "color": "gray",
+   "duration": "monthly",
+   "price": null,
+   "oldPrice": null,
+   "state": "in",
+   "powerType": "both",
+   "image": "img/eye-gray.webp",
+   "images": [
+    "img/eye-gray.webp",
+    "img/lens-box.webp"
+   ]
+  },
+  {
+   "id": 2,
+   "slug": "demo-2",
+   "brand": "Solitaire",
+   "name": "هازل هادئ",
+   "category": "lenses",
+   "color": "hazel",
+   "duration": "yearly",
+   "price": null,
+   "oldPrice": null,
+   "state": "low",
+   "powerType": "plano",
+   "image": "img/eye-hazel.webp",
+   "images": [
+    "img/eye-hazel.webp",
+    "img/lens-box.webp"
+   ]
+  },
+  {
+   "id": 3,
+   "slug": "demo-3",
+   "brand": "Bella",
+   "name": "أخضر مضيء",
+   "category": "lenses",
+   "color": "green",
+   "duration": "quarterly",
+   "price": null,
+   "oldPrice": null,
+   "state": "in",
+   "powerType": "both",
+   "image": "img/eye-green.webp",
+   "images": [
+    "img/eye-green.webp",
+    "img/lens-box.webp"
+   ]
+  },
+  {
+   "id": 4,
+   "slug": "demo-4",
+   "brand": "Lens Me",
+   "name": "بني لامع",
+   "category": "lenses",
+   "color": "brown",
+   "duration": "daily",
+   "price": null,
+   "oldPrice": null,
+   "state": "pre",
+   "powerType": "plano",
+   "image": "img/eye-brown.webp",
+   "images": [
+    "img/eye-brown.webp",
+    "img/lens-box.webp"
+   ]
+  },
+  {
+   "id": 5,
+   "slug": "demo-5",
+   "brand": "Fresh Lady",
+   "name": "أزرق دافئ",
+   "category": "lenses",
+   "color": "blue",
+   "duration": "semiannual",
+   "price": null,
+   "oldPrice": null,
+   "state": "in",
+   "powerType": "both",
+   "image": "img/eye-blue.webp",
+   "images": [
+    "img/eye-blue.webp",
+    "img/lens-box.webp"
+   ]
+  },
+  {
+   "id": 6,
+   "slug": "demo-6",
+   "brand": "Urban",
+   "name": "بنفسجي عميق",
+   "category": "lenses",
+   "color": "lilac",
+   "duration": "monthly",
+   "price": null,
+   "oldPrice": null,
+   "state": "out",
+   "powerType": "plano",
+   "image": "img/eye-lilac.webp",
+   "images": [
+    "img/eye-lilac.webp",
+    "img/lens-box.webp"
+   ]
+  },
+  {
+   "id": 7,
+   "slug": "demo-7",
+   "brand": "Siri Eyes",
+   "name": "عسلي حالم",
+   "category": "lenses",
+   "color": "honey",
+   "duration": "yearly",
+   "price": null,
+   "oldPrice": null,
+   "state": "in",
+   "powerType": "both",
+   "image": "img/eye-honey.webp",
+   "images": [
+    "img/eye-honey.webp",
+    "img/lens-box.webp"
+   ]
+  },
+  {
+   "id": 8,
+   "slug": "demo-8",
+   "brand": "Solitaire",
+   "name": "كاكاو طبيعي",
+   "category": "lenses",
+   "color": "cocoa",
+   "duration": "monthly",
+   "price": null,
+   "oldPrice": null,
+   "state": "low",
+   "powerType": "plano",
+   "image": "img/eye-cocoa.webp",
+   "images": [
+    "img/eye-cocoa.webp",
+    "img/lens-box.webp"
+   ]
+  },
+  {
+   "id": 9,
+   "slug": "demo-9",
+   "brand": "Bella",
+   "name": "رمادي عميق",
+   "category": "lenses",
+   "color": "gray",
+   "duration": "monthly",
+   "price": null,
+   "oldPrice": null,
+   "state": "in",
+   "powerType": "both",
+   "image": "img/eye-gray.webp",
+   "images": [
+    "img/eye-gray.webp",
+    "img/lens-box.webp"
+   ]
+  },
+  {
+   "id": 10,
+   "slug": "demo-10",
+   "brand": "Lens Me",
+   "name": "هازل حالم",
+   "category": "lenses",
+   "color": "hazel",
+   "duration": "yearly",
+   "price": null,
+   "oldPrice": null,
+   "state": "in",
+   "powerType": "plano",
+   "image": "img/eye-hazel.webp",
+   "images": [
+    "img/eye-hazel.webp",
+    "img/lens-box.webp"
+   ]
+  },
+  {
+   "id": 11,
+   "slug": "demo-11",
+   "brand": "Fresh Lady",
+   "name": "أخضر طبيعي",
+   "category": "lenses",
+   "color": "green",
+   "duration": "quarterly",
+   "price": null,
+   "oldPrice": null,
+   "state": "pre",
+   "powerType": "both",
+   "image": "img/eye-green.webp",
+   "images": [
+    "img/eye-green.webp",
+    "img/lens-box.webp"
+   ]
+  },
+  {
+   "id": 12,
+   "slug": "demo-12",
+   "brand": "Urban",
+   "name": "بني لؤلؤي",
+   "category": "lenses",
+   "color": "brown",
+   "duration": "daily",
+   "price": null,
+   "oldPrice": null,
+   "state": "in",
+   "powerType": "plano",
+   "image": "img/eye-brown.webp",
+   "images": [
+    "img/eye-brown.webp",
+    "img/lens-box.webp"
+   ]
+  },
+  {
+   "id": 13,
+   "slug": "demo-13",
+   "brand": "Siri Eyes",
+   "name": "أزرق كريمي",
+   "category": "lenses",
+   "color": "blue",
+   "duration": "semiannual",
+   "price": null,
+   "oldPrice": null,
+   "state": "low",
+   "powerType": "both",
+   "image": "img/eye-blue.webp",
+   "images": [
+    "img/eye-blue.webp",
+    "img/lens-box.webp"
+   ]
+  },
+  {
+   "id": 14,
+   "slug": "demo-14",
+   "brand": "Solitaire",
+   "name": "بنفسجي ناعم",
+   "category": "lenses",
+   "color": "lilac",
+   "duration": "monthly",
+   "price": null,
+   "oldPrice": null,
+   "state": "out",
+   "powerType": "plano",
+   "image": "img/eye-lilac.webp",
+   "images": [
+    "img/eye-lilac.webp",
+    "img/lens-box.webp"
+   ]
+  },
+  {
+   "id": 15,
+   "slug": "demo-15",
+   "brand": "Fresh Lady",
+   "name": "محلول عدسات 360 مل",
+   "category": "care",
+   "color": "",
+   "duration": "",
+   "price": null,
+   "oldPrice": null,
+   "state": "in",
+   "powerType": null,
+   "image": "img/lens-box.webp",
+   "images": [
+    "img/lens-box.webp"
+   ]
+  },
+  {
+   "id": 16,
+   "slug": "demo-16",
+   "brand": "Urban",
+   "name": "محلول عدسات للسفر",
+   "category": "care",
+   "color": "",
+   "duration": "",
+   "price": null,
+   "oldPrice": null,
+   "state": "low",
+   "powerType": null,
+   "image": "img/lens-box.webp",
+   "images": [
+    "img/lens-box.webp"
+   ]
+  },
+  {
+   "id": 17,
+   "slug": "demo-17",
+   "brand": "Catchy Lens",
+   "name": "علبة عدسات",
+   "category": "accessories",
+   "color": "",
+   "duration": "",
+   "price": null,
+   "oldPrice": null,
+   "state": "in",
+   "powerType": null,
+   "image": "img/lens-box.webp",
+   "images": [
+    "img/lens-box.webp"
+   ]
+  },
+  {
+   "id": 18,
+   "slug": "demo-18",
+   "brand": "Catchy Lens",
+   "name": "ملقاط عدسات",
+   "category": "accessories",
+   "color": "",
+   "duration": "",
+   "price": null,
+   "oldPrice": null,
+   "state": "in",
+   "powerType": null,
+   "image": "img/lens-box.webp",
+   "images": [
+    "img/lens-box.webp"
+   ]
+  }
+ ]
+}
