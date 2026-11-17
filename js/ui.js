@@ -2,7 +2,7 @@
 var CL=window.CL,e=CL.esc,I=CL.icon,A=CL.asset;
 var U=CL.url={home:'index.html',catalog:'catalog.html',lenses:'catalog.html?category=lenses',care:'catalog.html?category=care',accessories:'catalog.html?category=accessories',quiz:'quiz.html',tracking:'order.html',offers:'offers.html',tryon:'try-on.html',cart:'cart.html',wishlist:'wishlist.html',search:'catalog.html?focus=q',about:'about.html',faq:'faq.html',shipping:'shipping.html',returns:'returns.html',privacy:'privacy.html',terms:'terms.html',contact:'contact.html',
  product:function(p){return 'product.html?slug='+encodeURIComponent(p.slug)}};
-U.cart='cart.html';var SOON=['quiz','offers','tryon','wishlist','about','faq','shipping','returns','privacy','terms','contact'];SOON.forEach(function(k){U[k]='soon.html?p='+k});
+U.cart='cart.html';var SOON=['quiz','offers','tryon','wishlist'];SOON.forEach(function(k){U[k]='soon.html?p='+k});['about','faq','shipping','returns','privacy','terms','contact'].forEach(function(k){U[k]='page.html?p='+k});U.brands='brands.html';
 var S={},PRODUCTS=[],LAST=null;
 function img(file,alt,extra){var d=CL.dims[file]||[];return '<img src="'+A(file)+'" alt="'+e(alt||'')+'"'+(d[0]?' width="'+d[0]+'" height="'+d[1]+'"':'')+(extra||'')+'>'}
 var NAV=[['الرئيسية','home'],['العدسات','lenses'],['المحاليل والتعقيم','care'],['الإكسسوارات','accessories'],['اعثري على عدستك','quiz'],['تتبعي طلبك','tracking'],['العروض','offers'],['جرّبي اللون','tryon']];
@@ -16,8 +16,9 @@ CL.ui={
  },
  footer:function(){
   var wa=S.whatsapp?'<a class="wa" href="https://wa.me/'+e(S.whatsapp)+'" aria-label="واتساب">'+I('chat')+'</a>':'';
+  var D=CL.defaults||{},soc=[['فيسبوك',S.facebook||D.facebook],['إنستجرام',S.instagram||D.instagram],['تيك توك',S.tiktok||D.tiktok]].filter(function(x){return x[1]}),social=soc.length?'<div class="social">'+soc.map(function(x){return '<a href="'+e(x[1])+'" target="_blank" rel="noopener">'+x[0]+'</a>'}).join('')+'</div>':'';
   function col(h,l){return '<div><h3>'+h+'</h3>'+l.map(function(x){return '<a href="'+U[x[1]]+'">'+x[0]+'</a>'}).join('')+'</div>'}
-  return '<footer class="footer"><div class="wrap"><div class="footgrid"><div>'+img('logo.svg','Catchy Lens')+'<p><bdi dir="ltr">Your Eyes. Your Magic.</bdi></p><small>عدسات وألوان... بطريقتك.</small></div>'+col('اكتشفي',[['كل المنتجات','catalog'],['اعثري على عدستك','quiz'],['المفضلة','wishlist'],['من نحن','about'],['العروض','offers'],['جرّبي اللون','tryon']])+col('نساعدك',[['تتبعي طلبك','tracking'],['الأسئلة الشائعة','faq'],['الشحن','shipping'],['الاستبدال والاسترجاع','returns'],['الخصوصية','privacy'],['الشروط','terms'],['تواصلي معانا','contact']])+'</div><div class="copyright">© Catchy Lens</div></div></footer>'+wa;
+  return '<footer class="footer"><div class="wrap"><div class="footgrid"><div>'+img('logo.svg','Catchy Lens')+'<p><bdi dir="ltr">Your Eyes. Your Magic.</bdi></p><small>عدسات وألوان... بطريقتك.</small></div>'+col('اكتشفي',[['كل المنتجات','catalog'],['الماركات','brands'],['اعثري على عدستك','quiz'],['المفضلة','wishlist'],['من نحن','about'],['العروض','offers'],['جرّبي اللون','tryon']])+col('نساعدك',[['تتبعي طلبك','tracking'],['الأسئلة الشائعة','faq'],['الشحن','shipping'],['الاستبدال والاسترجاع','returns'],['الخصوصية','privacy'],['الشروط','terms'],['تواصلي معانا','contact']])+'</div>'+social+'<div class="copyright">© Catchy Lens</div></div></footer>'+wa;
  },
  card:function(p){
   var d=CL.dims[p.image]||[],disc=p.oldPrice&&p.price&&p.oldPrice>p.price?Math.round((1-p.price/p.oldPrice)*100):0,href=U.product(p);

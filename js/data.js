@@ -45,6 +45,10 @@ CL.data={
     var s=Object.assign({},d.settings),x=l.settings||{};
     if(x.whatsapp)s.whatsapp=x.whatsapp;if(x.announcement)s.announcement=x.announcement;
     s.freeShipMin=x.free_ship_min||0;s.prepTime=x.prep_time||'';s.zones=l.zones||[];
+    var D=CL.defaults||{};function g(k){return x[k]!=null&&x[k]!==''?x[k]:D[k]}
+    s.facebook=g('facebook');s.instagram=g('instagram');s.tiktok=g('tiktok');s.hours=g('hours');s.returnWindow=g('return_window');s.shipCairo=g('ship_cairo');s.shipDelta=g('ship_delta');s.shipUpper=g('ship_upper');
+    s.pages={};Object.keys(x).forEach(function(k){if(k.indexOf('page_')===0)s.pages[k.slice(5)]=x[k]});
+    var wa=String(s.whatsapp||'').replace(/\D/g,'');if(wa.charAt(0)==='0')wa='2'+wa;s.whatsapp=wa;
     return s;
    });
   });

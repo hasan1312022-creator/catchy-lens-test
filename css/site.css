@@ -158,3 +158,12 @@ html.lock{overflow:hidden}
 .hp{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);opacity:0;pointer-events:none}
 .cartgrid>*,.ci-body{min-width:0}.checkout input,.checkout textarea{max-width:100%}
 .checkout input.hp{width:1px;height:1px;min-height:0;padding:0;border:0;position:absolute;inset-inline-start:0}
+
+/* ===== content pages / brands / contact ===== */
+.prose{max-width:760px;padding-block:28px 40px}.prose h1{margin:0 0 18px}.prose h2{font-size:21px;margin:26px 0 8px}.prose p{margin:0 0 12px;line-height:1.9}.prose ul{margin:0 0 14px;padding-inline-start:22px;line-height:1.9}
+.faqp details{border-bottom:1px solid #e3d4df}.faqp summary{list-style:none;cursor:pointer;min-height:56px;display:flex;align-items:center;justify-content:space-between;gap:12px;font-weight:700}.faqp summary::-webkit-details-marker{display:none}.faqp summary::after{content:'+';font-size:22px;color:#b18199}.faqp details[open] summary::after{content:'\2212'}.faqp .ans{padding:0 0 14px}.faqp .ans p{margin:0}
+.contacts{display:grid;gap:12px;margin-top:22px}@media(min-width:600px){.contacts{grid-template-columns:repeat(2,1fr)}}
+.contact{display:grid;grid-template-columns:auto 1fr;column-gap:12px;align-items:center;padding:14px 16px;border:1px solid #e3d4df;border-radius:16px;background:#fff;color:#381a30;text-decoration:none;min-height:64px}.contact .ico{grid-row:span 2;width:26px;height:26px;stroke:#381a30;fill:none;stroke-width:1.6}.contact b{font-size:16px}.contact span{font-size:14px;color:#6a5662}
+.lead{color:#6a5662;margin:0 0 18px}.brandgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin:8px 0 40px}@media(min-width:700px){.brandgrid{grid-template-columns:repeat(4,1fr)}}
+.brandcard{display:grid;gap:6px;justify-items:center;text-align:center;padding:14px;border:1px solid #e3d4df;border-radius:16px;background:#fff;color:#381a30;text-decoration:none}.brandcard img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:12px;background:#f5eff5}.brandcard span{font-size:14px;color:#6a5662}
+.social{display:flex;flex-wrap:wrap;gap:16px;padding:16px 0 4px}.social a{color:inherit;text-decoration:underline;text-underline-offset:3px}

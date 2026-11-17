@@ -50,10 +50,10 @@ function loadAll(){
 /* ---------- shell ---------- */
 function render(){
  root.innerHTML='<div class="bar"><b>Catchy Lens — لوحة التحكم</b><span class="sp"></span><button id="out">خروج</button></div><div class="tabs" role="tablist">'
-  +[['products','المنتجات'],['settings','الإعدادات'],['coupons','الكوبونات']].map(function(t){return '<button role="tab" data-tab="'+t[0]+'" aria-selected="'+(S.tab===t[0])+'">'+t[1]+'</button>'}).join('')+'</div><main id="m"></main>';
+  +[['products','المنتجات'],['settings','الإعدادات'],['pages','الصفحات'],['coupons','الكوبونات']].map(function(t){return '<button role="tab" data-tab="'+t[0]+'" aria-selected="'+(S.tab===t[0])+'">'+t[1]+'</button>'}).join('')+'</div><main id="m"></main>';
  document.getElementById('out').onclick=function(){S.tok=null;S.ref=null;save();loginView()};
  [].forEach.call(root.querySelectorAll('[data-tab]'),function(b){b.onclick=function(){S.tab=b.dataset.tab;render()}});
- ({products:productsView,settings:settingsView,coupons:couponsView})[S.tab]();
+ ({products:productsView,settings:settingsView,pages:function(){pagesView()},coupons:couponsView})[S.tab]();
 }
 /* ---------- products ---------- */
 function stockOf(p){return (p.store_variants||[]).reduce(function(n,v){return n+((v.stock&&v.stock.qty)||0)},0)}
@@ -147,13 +147,32 @@ function vupload(id,ev){
  }
  document.body.appendChild(ov);paint();
 }
+
+/* ---------- pages ---------- */
+var PG=[['about','من نحن'],['shipping','الشحن والتوصيل'],['returns','الاستبدال والاسترجاع'],['faq','الأسئلة الشائعة'],['privacy','سياسة الخصوصية'],['terms','الشروط والأحكام'],['contact','تواصلي معانا']];
+function pagesView(sel){
+ var m=document.getElementById('m'),k=sel||PG[0][0],D=(CL.pageDefaults||{})[k]||{title:'',body:''},sv=S.settings['page_'+k],cur=sv&&typeof sv==='object'?sv:null;
+ m.innerHTML='<h2>الصفحات</h2><form class="card" id="pf" style="display:grid;gap:14px;max-width:760px"><label>الصفحة<select id="pk">'+PG.map(function(x){return '<option value="'+x[0]+'"'+(x[0]===k?' selected':'')+'>'+esc(x[1])+'</option>'}).join('')+'</select></label>'
+  +'<label>العنوان<input id="pt" maxlength="120" value="'+esc(cur?cur.title:D.title)+'"></label>'
+  +'<label>المحتوى<textarea id="pb" rows="20" style="width:100%;font:inherit;line-height:1.7">'+esc(cur&&cur.body!=null?cur.body:D.body)+'</textarea></label>'
+  +'<p class="hint" style="margin:0;font-size:14px;color:#6a5662">الكتابة: سطر يبدأ بـ <b dir="ltr"># </b> يبقى عنوان فرعي (وفي الأسئلة الشائعة يبقى سؤال)، وسطر يبدأ بـ <b dir="ltr">- </b> يبقى نقطة، وسطر فاضي يفصل الفقرات. تقدري تستخدمي دي وهتتبدل تلقائي من الإعدادات: <span dir="ltr">{{whatsapp}} {{hours}} {{returnWindow}} {{shipCairo}} {{shipDelta}} {{shipUpper}} {{freeShipLine}}</span></p>'
+  +'<div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn" type="submit">حفظ الصفحة</button><button class="btn alt" type="button" id="pr">رجّعي النص الافتراضي</button></div></form>';
+ document.getElementById('pk').onchange=function(ev){pagesView(ev.target.value)};
+ document.getElementById('pr').onclick=function(){if(!confirm('ترجيع النص الافتراضي لصفحة "'+(PG.filter(function(x){return x[0]===k})[0]||[])[1]+'"؟ هيتمسح تعديلك.'))return;
+  api('/rest/v1/store_settings?key=eq.page_'+k,{method:'DELETE',headers:{Prefer:'return=minimal'}}).then(function(){delete S.settings['page_'+k];msg('رجع الافتراضي');pagesView(k)}).catch(function(e){msg('ما اتنفذش: '+e.message,true)})};
+ document.getElementById('pf').onsubmit=function(ev){
+  ev.preventDefault();var btn=ev.target.querySelector('button[type=submit]'),val={title:document.getElementById('pt').value.trim()||D.title,body:document.getElementById('pb').value};
+  btn.disabled=true;
+  api('/rest/v1/store_settings?on_conflict=key',{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=minimal'},body:[{key:'page_'+k,value:val,public:true}]}).then(function(){S.settings['page_'+k]=val;msg('اتحفظت الصفحة')}).catch(function(e){msg('ما اتحفظش: '+e.message,true)}).then(function(){btn.disabled=false});
+ };
+}
 /* ---------- settings ---------- */
-var SET=[['announcement','نص الشريط العلوي','text'],['free_ship_min','الحد الأدنى للشحن المجاني (ج.م) — 0 معناه مفيش شحن مجاني','number'],['prep_time','مدة التجهيز (تظهر للعميلة)','text'],['whatsapp','رقم واتساب (بصيغة 2010xxxxxxxx من غير +)','text']];
+var SET=[['announcement','نص الشريط العلوي','text'],['free_ship_min','الحد الأدنى للشحن المجاني (ج.م) — 0 معناه مفيش شحن مجاني','number'],['prep_time','مدة التجهيز (تظهر للعميلة)','text'],['whatsapp','رقم واتساب (اكتبيه 01xxxxxxxxx والموقع بيظبطه)','text'],['hours','مواعيد الرد على الواتساب','text'],['return_window','مدة طلب الاستبدال/الاسترجاع بعد الاستلام','text'],['ship_cairo','مدة التوصيل: القاهرة والجيزة','text'],['ship_delta','مدة التوصيل: الوجه البحري','text'],['ship_upper','مدة التوصيل: الوجه القبلي','text'],['facebook','رابط فيسبوك','text'],['instagram','رابط إنستجرام','text'],['tiktok','رابط تيك توك','text']];
 function settingsView(){
  var m=document.getElementById('m');
  m.innerHTML='<h2>الإعدادات</h2><form class="card" id="sf" style="display:grid;gap:14px;max-width:560px">'+SET.map(function(s){var v=S.settings[s[0]];return '<label>'+esc(s[1])+'<input name="'+s[0]+'" type="'+s[2]+'" '+(s[2]==='number'?'min="0" ':'')+'value="'+esc(v==null?'':v)+'"></label>'}).join('')+'<button class="btn" type="submit">حفظ الإعدادات</button></form>';
  document.getElementById('sf').onsubmit=function(ev){
-  ev.preventDefault();var f=ev.target,btn=f.querySelector('button'),body=SET.map(function(s){var v=f.elements[s[0]].value.trim();return {key:s[0],value:s[2]==='number'?(+v||0):v,public:true}});
+  ev.preventDefault();var f=ev.target,btn=f.querySelector('button'),body=SET.map(function(s){var v=f.elements[s[0]].value.trim();if(s[0]==='whatsapp'){v=v.replace(/\D/g,'');if(v.charAt(0)==='0')v='2'+v}return {key:s[0],value:s[2]==='number'?(+v||0):v,public:true}});
   btn.disabled=true;
   api('/rest/v1/store_settings?on_conflict=key',{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=minimal'},body:body}).then(function(){body.forEach(function(x){S.settings[x.key]=x.value});msg('اتحفظت الإعدادات')}).catch(function(e){msg('ما اتحفظش: '+e.message,true)}).then(function(){btn.disabled=false});
  };
