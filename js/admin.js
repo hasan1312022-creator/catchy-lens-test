@@ -42,7 +42,7 @@ function start(){
 }
 function loadAll(){
  return Promise.all([
-  api('/rest/v1/store_products?select=*,store_variants(id,stock_id,color_label,swatch,active,sort,stock(qty))&order=sort.asc,id.asc'),
+  api('/rest/v1/store_products?select=*,store_variants(id,stock_id,color_label,swatch,active,sort,images,stock(qty))&order=sort.asc,id.asc'),
   api('/rest/v1/store_settings?select=key,value'),
   api('/rest/v1/store_coupons?select=*&order=code.asc')
  ]).then(function(r){S.products=r[0]||[];S.settings={};(r[1]||[]).forEach(function(x){S.settings[x.key]=x.value});S.coupons=r[2]||[]});
@@ -65,13 +65,13 @@ function filtered(){
 }
 function rows(){
  return filtered().map(function(p){
-  var nv=(p.store_variants||[]).length;
-  return '<tr data-id="'+p.id+'"><td><b>'+esc(p.name)+'</b><br><small>'+nv+' لون — مخزون '+stockOf(p)+'</small></td><td><select data-f="category">'+opts(CAT,p.category)+'</select></td><td><input data-f="price" type="number" min="0" step="1" value="'+(p.price||'')+'" aria-label="السعر"></td><td><input data-f="old_price" type="number" min="0" step="1" value="'+(p.old_price||'')+'" aria-label="السعر قبل الخصم"></td><td>'+(p.images||[]).length+' صورة</td><td><label style="display:flex;gap:8px;align-items:center"><input type="checkbox" data-f="active"'+(p.active?' checked':'')+'><span class="tag '+(p.active?'on':'off')+'">'+(p.active?'ظاهر':'مخفي')+'</span></label></td><td><button class="btn sm alt" data-edit="'+p.id+'">تعديل</button> <button class="btn sm" data-save="'+p.id+'">حفظ</button></td></tr>';
+  var nv=(p.store_variants||[]).length,noimg=(p.store_variants||[]).filter(function(v){return !(v.images&&v.images.length)}).length;
+  return '<tr data-id="'+p.id+'"><td><b>'+esc(p.name)+'</b><br><small>'+nv+' لون — مخزون '+stockOf(p)+'</small></td><td><select data-f="category">'+opts(CAT,p.category)+'</select></td><td><input data-f="price" type="number" min="0" step="1" value="'+(p.price||'')+'" aria-label="السعر"></td><td><input data-f="old_price" type="number" min="0" step="1" value="'+(p.old_price||'')+'" aria-label="السعر قبل الخصم"></td><td>'+(nv-noimg)+' / '+nv+' لون ليه صور</td><td><label style="display:flex;gap:8px;align-items:center"><input type="checkbox" data-f="active"'+(p.active?' checked':'')+'><span class="tag '+(p.active?'on':'off')+'">'+(p.active?'ظاهر':'مخفي')+'</span></label></td><td><button class="btn sm alt" data-edit="'+p.id+'">تعديل</button> <button class="btn sm" data-save="'+p.id+'">حفظ</button></td></tr>';
  }).join('')||'<tr><td colspan="7" style="text-align:center;padding:24px">مفيش منتجات بالفلتر ده.</td></tr>';
 }
 function productsView(){
  var m=document.getElementById('m'),n=S.products.length,act=S.products.filter(function(p){return p.active}).length;
- m.innerHTML='<h2>المنتجات</h2><p style="margin:0 0 12px;color:#6a5662">'+n+' منتج، الظاهر منهم في الموقع: '+act+'. المنتج ما يظهرش غير لما يتحط له سعر وتفعّليه.</p><div class="tools"><input id="q" type="search" placeholder="ابحثي بالاسم أو الماركة" value="'+esc(S.q)+'"><select id="flt"><option value="all">الكل</option><option value="active">الظاهر</option><option value="inactive">المخفي</option><option value="noprice">من غير سعر</option></select></div><div class="tw"><table><thead><tr><th>المنتج</th><th>القسم</th><th>السعر (ج.م)</th><th>قبل الخصم</th><th>الصور</th><th>الظهور</th><th></th></tr></thead><tbody id="tb">'+rows()+'</tbody></table></div>';
+ m.innerHTML='<h2>المنتجات</h2><p style="margin:0 0 12px;color:#6a5662">'+n+' منتج، الظاهر منهم في الموقع: '+act+'. المنتج ما يظهرش غير لما يتحط له سعر وتفعّليه.</p><div class="tools"><input id="q" type="search" placeholder="ابحثي بالاسم أو الماركة" value="'+esc(S.q)+'"><select id="flt"><option value="all">الكل</option><option value="active">الظاهر</option><option value="inactive">المخفي</option><option value="noprice">من غير سعر</option></select></div><div class="tw"><table><thead><tr><th>المنتج</th><th>القسم</th><th>السعر (ج.م)</th><th>قبل الخصم</th><th>صور الألوان</th><th>الظهور</th><th></th></tr></thead><tbody id="tb">'+rows()+'</tbody></table></div>';
  document.getElementById('flt').value=S.flt;
  document.getElementById('q').oninput=function(e){S.q=e.target.value.trim();document.getElementById('tb').innerHTML=rows()};
  document.getElementById('flt').onchange=function(e){S.flt=e.target.value;document.getElementById('tb').innerHTML=rows()};
@@ -92,6 +92,7 @@ function quickSave(p,tr,btn){
 }
 function editor(id){
  var p=S.products.filter(function(x){return x.id===id})[0],imgs=(p.images||[]).slice(),vs=(p.store_variants||[]).slice().sort(function(a,b){return a.sort-b.sort||a.id-b.id});
+ var orig={};vs.forEach(function(v){v.images=(v.images||[]).slice();orig[v.id]=JSON.stringify([v.color_label,v.swatch,v.active,v.images])});
  var ov=document.createElement('div');ov.className='ov';
  function paint(){
   ov.innerHTML='<div class="modal" role="dialog" aria-modal="true"><h2>'+esc(p.name)+'</h2><div class="grid">'
@@ -102,20 +103,29 @@ function editor(id){
    +'<label>الترتيب (الأصغر الأول)<input id="e-sort" type="number" value="'+(p.sort||0)+'"></label></div>'
    +'<label style="margin-top:12px">الوصف<textarea id="e-desc" rows="4" maxlength="4000">'+esc(p.description)+'</textarea></label>'
    +'<label style="margin-top:12px">وسوم (مفصولة بفاصلة) — للاختبار واقتراح العدسة<input id="e-tags" value="'+esc((p.tags||[]).join(', '))+'"></label>'
-   +'<h3>الصور (الأولى هي الرئيسية)</h3><div class="imgs">'+imgs.map(function(u,i){return '<figure><img src="'+esc(u)+'" alt="" loading="lazy">'+(i===0?'<span class="main">رئيسية</span>':'')+'<button data-rm="'+i+'" aria-label="حذف">×</button></figure>'}).join('')+'</div><div class="tools" style="margin-top:10px"><label class="btn alt sm" style="display:inline-grid;place-items:center">إضافة صور<input id="e-file" type="file" accept="image/*" multiple hidden></label><span id="up" style="color:#6a5662"></span></div>'
-   +'<h3>الألوان (مربوطة بالمخزون)</h3><div class="tw"><table><thead><tr><th>اسم اللون</th><th>لون الفلتر</th><th>المخزون</th><th>ظاهر</th></tr></thead><tbody>'+vs.map(function(v){return '<tr data-v="'+v.id+'"><td><input data-vf="color_label" value="'+esc(v.color_label)+'" style="max-width:none"></td><td><select data-vf="swatch">'+opts(SW,v.swatch)+'</select></td><td>'+((v.stock&&v.stock.qty)!=null?v.stock.qty:'—')+'</td><td><input type="checkbox" data-vf="active"'+(v.active?' checked':'')+'></td></tr>'}).join('')+'</tbody></table></div>'
+   +'<h3>صور عامة للماركة (بتظهر بس للون اللي ملوش صور خاصة)</h3><div class="imgs">'+imgs.map(function(u,i){return '<figure><img src="'+esc(u)+'" alt="" loading="lazy">'+(i===0?'<span class="main">رئيسية</span>':'')+'<button data-rm="'+i+'" aria-label="حذف">×</button></figure>'}).join('')+'</div><div class="tools" style="margin-top:10px"><label class="btn alt sm" style="display:inline-grid;place-items:center">إضافة صور<input id="e-file" type="file" accept="image/*" multiple hidden></label><span id="up" style="color:#6a5662"></span></div>'
+   +'<h3>الألوان (مربوطة بالمخزون)</h3><div class="tw"><table><thead><tr><th>اسم اللون</th><th>لون الفلتر</th><th>المخزون</th><th>ظاهر</th><th>صور اللون (الأولى رئيسية)</th></tr></thead><tbody>'+vs.map(function(v){return '<tr data-v="'+v.id+'"><td><input data-vf="color_label" value="'+esc(v.color_label)+'" style="max-width:none"></td><td><select data-vf="swatch">'+opts(SW,v.swatch)+'</select></td><td>'+((v.stock&&v.stock.qty)!=null?v.stock.qty:'—')+'</td><td><input type="checkbox" data-vf="active"'+(v.active?' checked':'')+'></td><td><div class="imgs vi">'+v.images.map(function(u,i){return '<figure style="width:64px"><img style="width:64px;height:64px" src="'+esc(u)+'" alt="" loading="lazy"><button data-vrm="'+v.id+':'+i+'" aria-label="حذف">\u00d7</button></figure>'}).join('')+'</div><label class="btn alt sm" style="display:inline-grid;place-items:center;margin-top:6px">إضافة صور<input type="file" accept="image/*" multiple hidden data-vfile="'+v.id+'"></label></td></tr>'}).join('')+'</tbody></table></div>'
    +'<div class="tools" style="margin-top:16px"><button class="btn" id="e-save">حفظ</button><button class="btn alt" id="e-close">إغلاق</button></div></div>';
   ov.querySelector('#e-close').onclick=function(){ov.remove();productsView()};
   ov.querySelector('#e-save').onclick=doSave;
   ov.querySelector('#e-file').onchange=upload;
-  [].forEach.call(ov.querySelectorAll('[data-rm]'),function(b){b.onclick=function(){var u=imgs.splice(+b.dataset.rm,1)[0];readIn();paint();var k='/storage/v1/object/'+BUCKET+'/'+decodeURIComponent((u.split('/public/'+BUCKET+'/')[1]||''));if(u.indexOf('/public/'+BUCKET+'/')>0)api(k,{method:'DELETE'}).catch(function(){})}});
+  [].forEach.call(ov.querySelectorAll('[data-vfile]'),function(i){i.onchange=function(ev){vupload(+i.dataset.vfile,ev)}});
+  [].forEach.call(ov.querySelectorAll('[data-vrm]'),function(b){b.onclick=function(){var a=b.dataset.vrm.split(':'),v=vs.filter(function(x){return x.id===+a[0]})[0];readIn();var u=v.images.splice(+a[1],1)[0];paint();rmFile(u)}});
+  [].forEach.call(ov.querySelectorAll('[data-rm]'),function(b){b.onclick=function(){var u=imgs.splice(+b.dataset.rm,1)[0];readIn();paint();rmFile(u)}});
  }
- function readIn(){
+ function readVars(){[].forEach.call(ov.querySelectorAll('[data-v]'),function(tr){var v=vs.filter(function(x){return x.id===+tr.dataset.v})[0];v.color_label=tr.querySelector('[data-vf=color_label]').value;v.swatch=tr.querySelector('[data-vf=swatch]').value;v.active=tr.querySelector('[data-vf=active]').checked})}
+ function rmFile(u){if(u&&u.indexOf('/public/'+BUCKET+'/')>0)api('/storage/v1/object/'+BUCKET+'/'+decodeURIComponent(u.split('/public/'+BUCKET+'/')[1]),{method:'DELETE'}).catch(function(){})}
+ function readIn(){readVars();
   var g=function(i){var e=ov.querySelector(i);return e?e.value:null};
   if(g('#e-name')!=null){p.name=g('#e-name').trim();p.brand=g('#e-brand').trim();p.category=g('#e-cat');p.duration=g('#e-dur');p.power_type=g('#e-pt');p.price=+g('#e-price')||0;p.old_price=g('#e-old')===''?null:+g('#e-old');p.sort=+g('#e-sort')||0;p.description=g('#e-desc');p.tags=g('#e-tags').split(',').map(function(x){return x.trim()}).filter(Boolean)}
  }
  function resize(file){
   return createImageBitmap(file).then(function(bm){var r=Math.min(1,1200/Math.max(bm.width,bm.height)),c=document.createElement('canvas');c.width=Math.round(bm.width*r);c.height=Math.round(bm.height*r);c.getContext('2d').drawImage(bm,0,0,c.width,c.height);return new Promise(function(ok){c.toBlob(ok,'image/webp',0.82)})});
+ }
+function vupload(id,ev){
+  var files=[].slice.call(ev.target.files);if(!files.length)return;readIn();var v=vs.filter(function(x){return x.id===id})[0],n=0;
+  files.reduce(function(pr,f){return pr.then(function(){return resize(f).then(function(b){var path='v'+id+'/'+Date.now()+'-'+(++n)+'.webp';return api('/storage/v1/object/'+BUCKET+'/'+path,{method:'POST',headers:{'Content-Type':'image/webp','x-upsert':'false'},body:b}).then(function(){v.images.push(URL+'/storage/v1/object/public/'+BUCKET+'/'+path)})})})},Promise.resolve())
+   .then(function(){paint()}).catch(function(e){msg('فشل رفع الصورة: '+e.message,true)});
  }
  function upload(ev){
   var files=[].slice.call(ev.target.files);if(!files.length)return;readIn();var up=ov.querySelector('#up'),n=0;
@@ -130,9 +140,9 @@ function editor(id){
   var vrows=[].slice.call(ov.querySelectorAll('[data-v]'));
   api('/rest/v1/store_products?id=eq.'+p.id,{method:'PATCH',headers:{Prefer:'return=minimal'},body:{name:p.name,brand:p.brand,category:p.category,duration:p.duration,power_type:p.power_type,price:p.price,old_price:p.old_price,sort:p.sort,description:p.description,tags:p.tags,images:imgs}})
    .then(function(){p.images=imgs;return Promise.all(vrows.map(function(tr){
-     var v=vs.filter(function(x){return x.id===+tr.dataset.v})[0],cl=tr.querySelector('[data-vf=color_label]').value.trim(),sw=tr.querySelector('[data-vf=swatch]').value,ac=tr.querySelector('[data-vf=active]').checked;
-     if(cl===v.color_label&&sw===v.swatch&&ac===v.active)return null;
-     return api('/rest/v1/store_variants?id=eq.'+v.id,{method:'PATCH',headers:{Prefer:'return=minimal'},body:{color_label:cl||v.color_label,swatch:sw,active:ac}}).then(function(){v.color_label=cl||v.color_label;v.swatch=sw;v.active=ac});
+     var v=vs.filter(function(x){return x.id===+tr.dataset.v})[0],cl=(v.color_label||'').trim()||v.color_label;
+     var sig=JSON.stringify([v.color_label,v.swatch,v.active,v.images]);if(sig===orig[v.id])return null;
+     return api('/rest/v1/store_variants?id=eq.'+v.id,{method:'PATCH',headers:{Prefer:'return=minimal'},body:{color_label:cl,swatch:v.swatch,active:v.active,images:v.images}}).then(function(){orig[v.id]=sig});
    }))}).then(function(){msg('اتحفظ');paint()}).catch(function(e){msg('ما اتحفظش: '+e.message,true)}).then(function(){b.disabled=false});
  }
  document.body.appendChild(ov);paint();
